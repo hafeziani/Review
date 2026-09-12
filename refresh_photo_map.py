@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Keeps photo-map.html in sync with the year folders under photos/, next to
+Keeps index.html in sync with the year folders under photos/, next to
 this script.
 
 Run manually any time with:
@@ -12,7 +12,7 @@ removed from one of the watched year folders.
 
 What it does each run:
   1. Scans every YYYY folder under photos/ for image/video files not
-     already present in the RECORDS array inside photo-map.html.
+     already present in the RECORDS array inside index.html.
   2. For each new file, pulls GPS + timestamp via exiftool, generates a
      720px/quality-88 JPEG thumbnail (converting HEIC via `sips` first,
      since Pillow can't read HEIC natively), and appends a record.
@@ -23,8 +23,8 @@ What it does each run:
   4. Prunes any existing record whose source file has since been deleted
      (or renamed) on disk, so removing/renaming a photo cleans it out of
      the gallery/map too, instead of leaving a broken "ghost" entry behind.
-  5. Re-sorts all records chronologically and writes photo-map.html back out,
-     keeping one rolling backup (photo-map.html.bak).
+  5. Re-sorts all records chronologically and writes index.html back out,
+     keeping one rolling backup (index.html.bak).
   6. Makes sure every existing year folder is in the LaunchAgent's
      WatchPaths list -- if a brand new year folder shows up (e.g. a new
      "2027" directory), it rewrites the .plist and reloads the LaunchAgent
@@ -44,8 +44,8 @@ import time
 
 DIR = os.path.dirname(os.path.abspath(__file__))
 PHOTOS_DIR = os.path.join(DIR, "photos")
-HTML_FILE = os.path.join(DIR, "photo-map.html")
-BACKUP_FILE = os.path.join(DIR, "photo-map.html.bak")
+HTML_FILE = os.path.join(DIR, "index.html")
+BACKUP_FILE = os.path.join(DIR, "index.html.bak")
 LOG_FILE = os.path.expanduser("~/Library/Logs/photo-map-refresh.log")
 PLIST_LABEL = "com.hafezjokar.photomap.refresh"
 PLIST_PATH = os.path.expanduser(f"~/Library/LaunchAgents/{PLIST_LABEL}.plist")
