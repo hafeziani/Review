@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """
-Keeps photo-map.html in sync with the year folders next to it.
+Keeps photo-map.html in sync with the year folders under photos/, next to
+this script.
 
 Run manually any time with:
     /usr/bin/python3 refresh_photo_map.py
@@ -10,7 +11,7 @@ bottom of this file's companion .plist) whenever a file is added to or
 removed from one of the watched year folders.
 
 What it does each run:
-  1. Scans every YYYY folder next to this script for image/video files not
+  1. Scans every YYYY folder under photos/ for image/video files not
      already present in the RECORDS array inside photo-map.html.
   2. For each new file, pulls GPS + timestamp via exiftool, generates a
      720px/quality-88 JPEG thumbnail (converting HEIC via `sips` first,
@@ -42,6 +43,7 @@ import tempfile
 import time
 
 DIR = os.path.dirname(os.path.abspath(__file__))
+PHOTOS_DIR = os.path.join(DIR, "photos")
 HTML_FILE = os.path.join(DIR, "photo-map.html")
 BACKUP_FILE = os.path.join(DIR, "photo-map.html.bak")
 LOG_FILE = os.path.expanduser("~/Library/Logs/photo-map-refresh.log")
@@ -65,9 +67,11 @@ def log(msg):
 
 
 def year_dirs():
+    if not os.path.isdir(PHOTOS_DIR):
+        return []
     return sorted(
-        d for d in os.listdir(DIR)
-        if re.fullmatch(r"\d{4}", d) and os.path.isdir(os.path.join(DIR, d))
+        d for d in os.listdir(PHOTOS_DIR)
+        if re.fullmatch(r"\d{4}", d) and os.path.isdir(os.path.join(PHOTOS_DIR, d))
     )
 
 
@@ -81,7 +85,7 @@ def sync_watch_paths():
     with open(PLIST_PATH, "rb") as f:
         plist = plistlib.load(f)
 
-    wanted = sorted({DIR} | {os.path.join(DIR, y) for y in year_dirs()})
+    wanted = sorted({PHOTOS_DIR} | {os.path.join(PHOTOS_DIR, y) for y in year_dirs()})
     current = sorted(plist.get("WatchPaths", []))
     if wanted == current:
         return False
@@ -138,7 +142,7 @@ def refresh():
 
     kept, ghosts = [], []
     for r in records:
-        if os.path.isfile(os.path.join(DIR, r["year"], r["file"])):
+        if os.path.isfile(os.path.join(PHOTOS_DIR, r["year"], r["file"])):
             kept.append(r)
         else:
             ghosts.append(r)
@@ -149,7 +153,7 @@ def refresh():
 
     new_files = []
     for y in year_dirs():
-        for fn in sorted(os.listdir(os.path.join(DIR, y))):
+        for fn in sorted(os.listdir(os.path.join(PHOTOS_DIR, y))):
             if fn.startswith("."):
                 continue
             ext = os.path.splitext(fn)[1].lower()
@@ -168,7 +172,7 @@ def refresh():
         return
 
     log(f"found {len(new_files)} candidate new file(s)")
-    paths = [os.path.join(DIR, y, fn) for y, fn in new_files]
+    paths = [os.path.join(PHOTOS_DIR, y, fn) for y, fn in new_files]
     proc = subprocess.run(
         ["exiftool", "-j", "-n", "-GPSLatitude", "-GPSLongitude",
          "-DateTimeOriginal", "-CreateDate", "-MIMEType"] + paths,
@@ -184,7 +188,7 @@ def refresh():
     new_records = []
     skipped = []
     for y, fn in new_files:
-        src_path = os.path.join(DIR, y, fn)
+        src_path = os.path.join(PHOTOS_DIR, y, fn)
         m = meta_by_path.get(src_path)
         if not m:
             skipped.append((y, fn, "no exif data (file still syncing?)"))

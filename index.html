@@ -278,7 +278,7 @@ let lbIndex = -1;
 function openLightbox(i) {
   lbIndex = i;
   const r = RECORDS[i];
-  const fileHref = r.year + "/" + encodeURIComponent(r.file).replace(/%2F/g, '/');
+  const fileHref = "photos/" + r.year + "/" + encodeURIComponent(r.file).replace(/%2F/g, '/');
   const thumbSrc = "data:image/jpeg;base64," + r.thumb;
   const hasGeo = r.lat != null && r.lon != null;
 
@@ -368,7 +368,7 @@ function initMap() {
     const extra = recs.length - shown.length;
     const thumbs = shown.map((r) => {
       const thumbSrc = "data:image/jpeg;base64," + r.thumb;
-      const fileHref = r.year + "/" + encodeURIComponent(r.file).replace(/%2F/g, '/');
+      const fileHref = "photos/" + r.year + "/" + encodeURIComponent(r.file).replace(/%2F/g, '/');
       return `<a href="${fileHref}" target="_blank" title="${r.file} — ${r.date}"><img src="${thumbSrc}" alt=""></a>`;
     }).join('');
     const more = extra > 0 ? `<div class="cluster-more">+${extra} more</div>` : '';
@@ -408,7 +408,7 @@ function initMap() {
 
     const appleUrl = "https://maps.apple.com/?ll=" + r.lat + "," + r.lon +
       "&q=" + encodeURIComponent(r.file);
-    const fileHref = r.year + "/" + encodeURIComponent(r.file).replace(/%2F/g, '/');
+    const fileHref = "photos/" + r.year + "/" + encodeURIComponent(r.file).replace(/%2F/g, '/');
     const thumbSrc = "data:image/jpeg;base64," + r.thumb;
     const playBadge = r.video ? `<div class="play-badge">▶</div>` : '';
     const openLabel = r.video ? 'Play video' : 'Open full photo';
